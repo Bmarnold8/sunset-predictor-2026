@@ -1,8 +1,8 @@
 streamlit
 streamlit-javascript
 pytz
-astral
-timezonefinder
+astral==3.2
+timezonefinder==8.0.0
 requests
 numpy
 pandas
