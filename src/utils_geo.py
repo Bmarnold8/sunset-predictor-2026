@@ -12,8 +12,6 @@ from timezonefinder import TimezoneFinder
 from astral import LocationInfo
 from astral.sun import sun, azimuth
 
-from streamlit_javascript import st_javascript
-
 
 # ------------------------------------------------------------
 # Timezone helpers
@@ -68,36 +66,3 @@ def get_auto_azimuth(lat: float, lon: float, date_obj) -> float:
     # Astral v3 azimuth()
     az = azimuth(location.observer, sunset_local)
     return float(az)
-
-
-# ------------------------------------------------------------
-# Browser geolocation (immediate)
-# ------------------------------------------------------------
-
-def get_browser_location_immediate() -> Tuple[Optional[float], Optional[float]]:
-    """
-    Immediately requests browser geolocation.
-    Returns (lat, lon) or (None, None) if user denies or unavailable.
-    """
-    coords = st_javascript(
-        """
-        new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve({lat: null, lon: null});
-            } else {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
-                    () => resolve({lat: null, lon: null})
-                );
-            }
-        })
-        """
-    )
-
-    if isinstance(coords, dict):
-        lat = coords.get("lat")
-        lon = coords.get("lon")
-        if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
-            return float(lat), float(lon)
-
-    return None, None
