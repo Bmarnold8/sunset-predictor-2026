@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 import pytz
 
 # Import your existing modules
-from sunset2026_main import run_full_sunset_analysis
-from location_loader import load_locations
+from src.sunset2026_main import run_full_sunset_analysis
+from src.location_loader import load_locations
 
 st.set_page_config(
     page_title="Sunset Predictor 2026",

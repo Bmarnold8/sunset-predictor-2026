@@ -3,16 +3,16 @@
 from datetime import date, datetime, timedelta, timezone
 from typing import Dict, Tuple, List
 
-from location_selector import choose_location_interactive
-from mesh_builder import build_narrow_mesh
-from open_meteo_client import get_sunset_utc, get_cloud_profile_option_a
-from config import (
+from src.location_selector import choose_location_interactive
+from src.mesh_builder import build_narrow_mesh
+from src.open_meteo_client import get_sunset_utc, get_cloud_profile_option_a
+from src.config import (
     MESH_STEP_KM,
     MESH_MAX_DISTANCE_KM,
     PERP_OFFSET_DEFAULT_KM,
 )
 
-from sunset_classification import (
+from src.sunset_classification import (
     evaluate_far_west,
     evaluate_overhead_height,
     evaluate_overhead_coverage,

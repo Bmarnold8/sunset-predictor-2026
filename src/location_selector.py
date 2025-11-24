@@ -1,6 +1,6 @@
 # src/location_selector.py
 
-from locations import LOCATIONS, get_location
+from src.locations import LOCATIONS, get_location
 
 def choose_location_interactive():
     """Prompt the user to choose a saved location and return (name, lat, lon)."""
