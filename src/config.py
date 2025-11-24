@@ -2,41 +2,35 @@
 
 """
 Configuration constants for Sunset Predictor 2026.
-Supports all mesh-builder versions (past & future).
+Universal / backwards-compatible with all mesh_builder versions.
 """
 
 # ------------------------------------------------------------
 # Mesh spacing and extents
 # ------------------------------------------------------------
-# Distance step along the azimuth
 MESH_STEP_KM = 75.0
-
-# Maximum distance along azimuth
 MESH_MAX_DISTANCE_KM = 900.0
 
-# Default perpendicular width (left/right) for Group B
+# Default perpendicular width (left/right)
 PERP_OFFSET_DEFAULT_KM = 75.0
 
 
 # ------------------------------------------------------------
-# Distance bands along azimuth
-#   These determine the "subgroup" names applied by mesh_builder.
+# Distance bands along azimuth (subgrouping)
 # ------------------------------------------------------------
 # Format: (base_subgroup_name, min_km_inclusive, max_km_exclusive)
 DISTANCE_BANDS = [
-    ("Close",         0.0,   252.0),
-    ("West",        252.0,   350.0),
-    ("CloudHorizon",350.0,   468.0),
-    ("FarWest",     468.0,   936.0),
+    ("Close",          0.0, 252.0),
+    ("West",         252.0, 350.0),
+    ("CloudHorizon", 350.0, 468.0),
+    ("FarWest",      468.0, 936.0),
 ]
 
 
 # ------------------------------------------------------------
-# Per-band perpendicular offsets (if used)
-# Some mesh-builder versions expand width differently depending on distance.
+# Per-band perpendicular offsets
+# (some mesh versions use these to widen/narrow by distance)
 # ------------------------------------------------------------
-# This is the constant Streamlit is complaining about.
-# We'll define a flexible mapping that works with ANY mesh logic:
 PERP_OFFSET_BY_BAND_KM = {
     "Close":         PERP_OFFSET_DEFAULT_KM,
     "West":          PERP_OFFSET_DEFAULT_KM,
@@ -46,6 +40,6 @@ PERP_OFFSET_BY_BAND_KM = {
 
 
 # ------------------------------------------------------------
-# Default timezone fallback
+# Timezone fallback (only used if lookup fails)
 # ------------------------------------------------------------
 DEFAULT_TIMEZONE_NAME = "America/New_York"

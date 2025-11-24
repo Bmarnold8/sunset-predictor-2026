@@ -1,7 +1,9 @@
 streamlit
+streamlit-javascript
 pytz
+astral
+timezonefinder
 requests
 numpy
 pandas
-astral
 pyproj
