@@ -12,7 +12,7 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from src.sunset2026_main import run_full_sunset_analysis
-from src.location_loader import load_locations
+from src.location_selector import load_locations
 
 
 st.set_page_config(
