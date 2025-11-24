@@ -1,0 +1,12 @@
+# macOS metadata
+.DS_Store
+src/.DS_Store
+
+# Python cache
+__pycache__/
+
+# Virtual environments
+.venv/
+
+# Streamlit cache artifacts (optional but safe)
+.streamlit/
