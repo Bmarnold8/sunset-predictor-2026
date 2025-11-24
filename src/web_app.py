@@ -12,7 +12,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from streamlit_javascript import st_javascript
+from streamlit_geolocation import streamlit_geolocation  # NEW
 
 from src.location_loader import load_locations
 from src.sunset2026_main import run_full_sunset_analysis
@@ -38,8 +38,6 @@ if "browser_lat" not in st.session_state:
     st.session_state.browser_lat = None
 if "browser_lon" not in st.session_state:
     st.session_state.browser_lon = None
-if "request_browser_loc" not in st.session_state:
-    st.session_state.request_browser_loc = False
 
 
 # ------------------------------------------------------------
@@ -67,45 +65,24 @@ elif location_mode == "Enter coordinates manually":
     st.write(f"Coordinates: **{lat:.6f}, {lon:.6f}**")
 
 elif location_mode == "Use my current location":
-    st.info("Click the button below. Your browser will ask for location permission.")
+    st.info("Press the button below. Your browser should ask permission to share location.")
 
-    # Button must trigger location request (browser requirement)
-    if st.button("Use My Current Location"):
-        st.session_state.request_browser_loc = True
+    # This component renders its own button and returns a dict after click
+    loc = streamlit_geolocation()
 
-    # Only run the JS geolocation call right after the button click rerun
-    if st.session_state.request_browser_loc:
-        coords = st_javascript(
-            """
-            new Promise((resolve) => {
-                if (!navigator.geolocation) {
-                    resolve({lat: null, lon: null});
-                } else {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
-                        () => resolve({lat: null, lon: null})
-                    );
-                }
-            })
-            """
-        )
+    # loc is either "No Location Info" (string) or a dict with latitude/longitude
+    if isinstance(loc, dict):
+        b_lat = loc.get("latitude")
+        b_lon = loc.get("longitude")
+        if isinstance(b_lat, (int, float)) and isinstance(b_lon, (int, float)):
+            st.session_state.browser_lat = float(b_lat)
+            st.session_state.browser_lon = float(b_lon)
 
-        if isinstance(coords, dict):
-            b_lat = coords.get("lat")
-            b_lon = coords.get("lon")
-            if isinstance(b_lat, (int, float)) and isinstance(b_lon, (int, float)):
-                st.session_state.browser_lat = float(b_lat)
-                st.session_state.browser_lon = float(b_lon)
-
-        # Regardless of result, stop requesting on subsequent reruns
-        st.session_state.request_browser_loc = False
-
-    # Use stored browser location if available
     lat = st.session_state.browser_lat
     lon = st.session_state.browser_lon
 
     if lat is None or lon is None:
-        st.warning("Location not received yet. If prompted, allow location access and try again.")
+        st.warning("No location received yet. Click the button and allow location access.")
     else:
         st.success(f"Detected coordinates: **{lat:.6f}, {lon:.6f}**")
 

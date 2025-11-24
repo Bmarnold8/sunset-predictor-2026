@@ -1,5 +1,5 @@
 streamlit
-streamlit-javascript
+streamlit-geolocation
 pytz
 astral==3.2
 timezonefinder==8.0.0
