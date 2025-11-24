@@ -1,12 +1,19 @@
-# web_app.py
+# src/web_app.py
 
+import os
+import sys
 import streamlit as st
-from datetime import datetime, timedelta
 import pytz
 
-# Import your existing modules
+# ---- Fix Python path so `src.*` imports work on Streamlit Cloud ----
+# web_app.py lives in /src. We add the REPO ROOT to sys.path.
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 from src.sunset2026_main import run_full_sunset_analysis
 from src.location_loader import load_locations
+
 
 st.set_page_config(
     page_title="Sunset Predictor 2026",
@@ -51,12 +58,11 @@ if st.button("Run Tonight's Sunset Analysis"):
             report_text = run_full_sunset_analysis(
                 lat=lat,
                 lon=lon,
-                azimuth=azimuth,
-                date=None,          # use today by default
-                verbose=True        # keep your explicit print style
+                azimuth_deg=azimuth,
+                target_date=None,   # today
+                verbose=True
             )
 
-            # Show output in a scrollable text box
             st.subheader("📄 Sunset Report")
             st.text(report_text)
 
