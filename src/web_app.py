@@ -12,9 +12,11 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
+from streamlit_javascript import st_javascript
+
 from src.location_loader import load_locations
 from src.sunset2026_main import run_full_sunset_analysis
-from src.utils_geo import get_browser_location_immediate, get_auto_azimuth
+from src.utils_geo import get_auto_azimuth
 
 
 st.set_page_config(
@@ -28,6 +30,17 @@ st.write("""
 Select a location (saved, manual, or current), and this app will automatically compute the sunset azimuth
 and analyze cloud conditions to explain tonight’s sunset potential.
 """)
+
+# ------------------------------------------------------------
+# Session state init for browser location
+# ------------------------------------------------------------
+if "browser_lat" not in st.session_state:
+    st.session_state.browser_lat = None
+if "browser_lon" not in st.session_state:
+    st.session_state.browser_lon = None
+if "request_browser_loc" not in st.session_state:
+    st.session_state.request_browser_loc = False
+
 
 # ------------------------------------------------------------
 # LOCATION INPUT (UI Style A)
@@ -54,14 +67,51 @@ elif location_mode == "Enter coordinates manually":
     st.write(f"Coordinates: **{lat:.6f}, {lon:.6f}**")
 
 elif location_mode == "Use my current location":
-    st.info("Your browser will ask for location permission. Allow it to continue.")
-    lat, lon = get_browser_location_immediate()
+    st.info("Click the button below. Your browser will ask for location permission.")
+
+    # Button must trigger location request (browser requirement)
+    if st.button("Use My Current Location"):
+        st.session_state.request_browser_loc = True
+
+    # Only run the JS geolocation call right after the button click rerun
+    if st.session_state.request_browser_loc:
+        coords = st_javascript(
+            """
+            new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve({lat: null, lon: null});
+                } else {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
+                        () => resolve({lat: null, lon: null})
+                    );
+                }
+            })
+            """
+        )
+
+        if isinstance(coords, dict):
+            b_lat = coords.get("lat")
+            b_lon = coords.get("lon")
+            if isinstance(b_lat, (int, float)) and isinstance(b_lon, (int, float)):
+                st.session_state.browser_lat = float(b_lat)
+                st.session_state.browser_lon = float(b_lon)
+
+        # Regardless of result, stop requesting on subsequent reruns
+        st.session_state.request_browser_loc = False
+
+    # Use stored browser location if available
+    lat = st.session_state.browser_lat
+    lon = st.session_state.browser_lon
+
     if lat is None or lon is None:
-        st.warning("Location not available yet. If prompted, allow location access and wait a moment.")
+        st.warning("Location not received yet. If prompted, allow location access and try again.")
     else:
         st.success(f"Detected coordinates: **{lat:.6f}, {lon:.6f}**")
 
+
 coords_ready = (lat is not None) and (lon is not None)
+
 
 # ------------------------------------------------------------
 # AZIMUTH SETTINGS
@@ -77,10 +127,15 @@ override = st.checkbox("Advanced: manually override azimuth")
 
 manual_az = None
 if override:
-    manual_az = st.slider("Manual azimuth (degrees)", 0, 360, value=int(round(auto_az or 270)))
+    manual_az = st.slider(
+        "Manual azimuth (degrees)",
+        0, 360,
+        value=int(round(auto_az or 270))
+    )
 
 def final_azimuth():
     return manual_az if manual_az is not None else auto_az
+
 
 # ------------------------------------------------------------
 # RUN BUTTON
